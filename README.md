@@ -8,6 +8,8 @@ The Quality Assurance Leader who has been the most annoying about this tool, Mas
 
 PWStack Community
 
+To furypwdev for influencing the choice of the new name for the tool (lol) 
+
 ## Rules
 - Do not use AI to understand the project and the technologies used
 - Do not use AI to delve into a feature of the tool and understand what it does and how it works

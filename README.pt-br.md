@@ -7,6 +7,8 @@ O Quality Assurance Leader que mais encheu e enche o saco por coisas dessa ferra
 
 Comunidade PWStack
 
+Ao furypwdev pela influencia para escolher o nome novo da tool ( lol )
+
 ## Regras 
 - Nao utilize IA para entender o projeto e as tecnologias utilizadas
 - Nao utilize IA para se aprofundar numa funcionalidade da ferramenta e entender o que e como ela faz
