@@ -1,0 +1,172 @@
+<Window x:Class="UIEdit.Windows.ImageSelectorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Seletor de Imagens" Height="600" Width="900"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource Color.PrimaryBackground}"
+        Foreground="{DynamicResource Color.Text}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <Grid Grid.Row="0" Margin="10" Background="{DynamicResource Color.SecondaryBackground}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
+            <TextBox x:Name="TxtSearch" Grid.Column="0" 
+                     Text="Buscar imagens..." 
+                     Margin="5" 
+                     Background="{DynamicResource Color.SecondaryBackground}"
+                     Foreground="{DynamicResource Color.Text}"
+                     TextChanged="TxtSearch_TextChanged"
+                     GotFocus="TxtSearch_GotFocus"
+                     LostFocus="TxtSearch_LostFocus"/>
+            
+            <ComboBox x:Name="CmbFormatFilter" Grid.Column="1" 
+                      Width="100" Margin="5" 
+                      Background="{DynamicResource Color.SecondaryBackground}"
+                      Foreground="{DynamicResource Color.Text}">
+                <ComboBoxItem Content="Todos" IsSelected="True"/>
+                <ComboBoxItem Content="DDS"/>
+                <ComboBoxItem Content="TGA"/>
+                <ComboBoxItem Content="PNG"/>
+            </ComboBox>
+            
+            <Button x:Name="BtnRefresh" Grid.Column="2" 
+                    Content="?" Width="30" Height="30" Margin="5"
+                    Background="Transparent" BorderBrush="Transparent"
+                    Click="BtnRefresh_Click"
+                    ToolTip="Atualizar lista"/>
+        </Grid>
+        
+        <Grid Grid.Row="1" Margin="10,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <Border Grid.Column="0" 
+                    Background="{DynamicResource Color.SecondaryBackground}"
+                    BorderBrush="{DynamicResource Color.Border}" 
+                    BorderThickness="1">
+                <TreeView x:Name="TvFolders" 
+                          Background="Transparent"
+                          Foreground="{DynamicResource Color.Text}"
+                          SelectedItemChanged="TvFolders_SelectedItemChanged">
+                    <TreeView.ItemTemplate>
+                        <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Icon}" FontFamily="Segoe UI Emoji" Margin="0,0,5,0"/>
+                                <TextBlock Text="{Binding Name}"/>
+                                <TextBlock Text="{Binding Count}" 
+                                           Foreground="{DynamicResource Color.SubText}"
+                                           Margin="5,0,0,0"/>
+                            </StackPanel>
+                        </HierarchicalDataTemplate>
+                    </TreeView.ItemTemplate>
+                </TreeView>
+            </Border>
+            
+            <GridSplitter Grid.Column="1" Width="5" 
+                          Background="{DynamicResource Color.Border}"
+                          HorizontalAlignment="Stretch"/>
+            
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="200"/>
+                </Grid.RowDefinitions>
+                
+                <ListBox x:Name="LbImages" Grid.Row="0"
+                         Background="{DynamicResource Color.SecondaryBackground}"
+                         Foreground="{DynamicResource Color.Text}"
+                         SelectionChanged="LbImages_SelectionChanged"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border Width="120" Height="120" Margin="5" 
+                                    BorderBrush="{DynamicResource Color.Border}" 
+                                    BorderThickness="1"
+                                    Background="{DynamicResource Color.SecondaryBackground}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    
+                                    <Image Grid.Row="0" 
+                                           Source="{Binding Thumbnail}" 
+                                           Stretch="Uniform"
+                                           Margin="5"/>
+                                    
+                                    <TextBlock Grid.Row="1" 
+                                               Text="{Binding FileName}" 
+                                               FontSize="10"
+                                               TextWrapping="Wrap"
+                                               TextTrimming="CharacterEllipsis"
+                                               Margin="2"
+                                               HorizontalAlignment="Center"
+                                               Foreground="{DynamicResource Color.Text}"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                
+                <Border Grid.Row="1" 
+                        Background="{DynamicResource Color.SecondaryBackground}"
+                        BorderBrush="{DynamicResource Color.Border}" 
+                        BorderThickness="1,1,1,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <Image x:Name="ImgPreview" Grid.Row="0" 
+                               Stretch="Uniform"
+                               Margin="10"/>
+                        
+                        <StackPanel Grid.Row="1" Margin="10,5">
+                            <TextBlock x:Name="TxtImageInfo" 
+                                       FontSize="12"
+                                       Foreground="{DynamicResource Color.SubText}"/>
+                            <TextBlock x:Name="TxtImagePath" 
+                                       FontSize="10"
+                                       Foreground="{DynamicResource Color.SubText}"
+                                       TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+        
+        <StackPanel Grid.Row="2" Orientation="Horizontal" 
+                    HorizontalAlignment="Right" Margin="10">
+            <Button x:Name="BtnCancel" Content="Cancelar" 
+                    Width="80" Height="30" Margin="5"
+                    Background="Transparent" 
+                    BorderBrush="{DynamicResource Color.Border}"
+                    Foreground="{DynamicResource Color.Text}"
+                    Click="BtnCancel_Click"/>
+            <Button x:Name="BtnSelect" Content="Selecionar" 
+                    Width="80" Height="30" Margin="5"
+                    Background="{DynamicResource Color.Accent}"
+                    Foreground="White"
+                    Click="BtnSelect_Click"
+                    IsEnabled="False"/>
+        </StackPanel>
+    </Grid>
+</Window>

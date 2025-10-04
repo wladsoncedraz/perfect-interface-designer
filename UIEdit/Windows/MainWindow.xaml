@@ -1,0 +1,402 @@
+﻿<Window x:Class="UIEdit.Windows.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:avalon="clr-namespace:ICSharpCode.AvalonEdit;assembly=ICSharpCode.AvalonEdit"
+        xmlns:local="clr-namespace:UIEdit.Windows"
+        Background="{DynamicResource Color.PrimaryBackground}"
+        Foreground="{DynamicResource Color.Text}"
+        Icon="../logo.ico"
+        Title="UIEdit" Height="562" Width="1055">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid Grid.ColumnSpan="3">
+            <TabControl Background="{DynamicResource Color.HeaderBackground}">
+                <TabItem Header="Tools" Background="{DynamicResource Color.HeaderBackground}">
+                    <DockPanel LastChildFill="False" Margin="8" Background="{DynamicResource Color.SecondaryBackground}">
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                            <ToggleButton x:Name="BtnToggleOutlines" Margin="0,0,8,0" Background="Transparent" BorderBrush="Transparent" Checked="ToggleOutlines_OnChanged" Unchecked="ToggleOutlines_OnChanged" ToolTip="Contornar componentes (amarelo pontilhado)">
+                                <ToggleButton.Style>
+                                    <Style TargetType="ToggleButton">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="ToggleButton">
+                                                    <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="4">
+                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="Bd" Property="Background" Value="#EAEAEA"/>
+                                                            <Setter TargetName="Bd" Property="BorderBrush" Value="#B0B0B0"/>
+                                                        </Trigger>
+                                                        <Trigger Property="IsChecked" Value="True">
+                                                            <Setter TargetName="Bd" Property="Background" Value="#DADADA"/>
+                                                            <Setter TargetName="Bd" Property="BorderBrush" Value="#8A8A8A"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </ToggleButton.Style>
+                                <Viewbox Width="28" Height="28">
+                                    <Canvas Width="24" Height="24">
+                                        <Path Fill="#444" Data="M3,1H5V3H3V5H1V3A2,2 0 0,1 3,1M14,1A2,2 0 0,1 16,3V5H14V3H12V1H14M20,7A2,2 0 0,1 22,9V11H20V9H18V7H20M22,20A2,2 0 0,1 20,22H18V20H20V18H22V20M20,13H22V16H20V13M13,9V7H16V10H14V9H13M13,22V20H16V22H13M9,22A2,2 0 0,1 7,20V18H9V20H11V22H9M7,16V13H9V14H10V16H7M7,3V1H10V3H7M3,16A2,2 0 0,1 1,14V12H3V14H5V16H3M1,7H3V10H1V7M9,7H11V9H9V11H7V9A2,2 0 0,1 9,7M16,14A2,2 0 0,1 14,16H12V14H14V12H16V14Z"/>
+                                    </Canvas>
+                                </Viewbox>
+                            </ToggleButton>
+                            <Button x:Name="BtnUndo" Margin="0,0,8,0" Background="Transparent" BorderBrush="Transparent" Click="BtnUndo_OnClick" ToolTipService.ShowOnDisabled="True" ToolTip="Desfazer (Ctrl+Z)" IsEnabled="False">
+                                <Viewbox Width="28" Height="28">
+                                    <Canvas Width="24" Height="24">
+                                        <Path Fill="#444" Data="M20 13.5V20H18V13.5C18 11 16 9 13.5 9H7.83L10.91 12.09L9.5 13.5L4 8L9.5 2.5L10.92 3.91L7.83 7H13.5C17.09 7 20 9.91 20 13.5Z"/>
+                                    </Canvas>
+                                </Viewbox>
+                            </Button>
+                            <Button x:Name="BtnRedo" Margin="0,0,8,0" Background="Transparent" BorderBrush="Transparent" Click="BtnRedo_OnClick" ToolTipService.ShowOnDisabled="True" ToolTip="Refazer (Ctrl+Shift+Z)" IsEnabled="False">
+                                <Viewbox Width="28" Height="28">
+                                    <Canvas Width="24" Height="24">
+                                        <Path Fill="#444" Data="M20 8L14.5 13.5L13.09 12.09L16.17 9H10.5C8 9 6 11 6 13.5V20H4V13.5C4 9.91 6.91 7 10.5 7H16.17L13.08 3.91L14.5 2.5L20 8Z"/>
+                                    </Canvas>
+                                </Viewbox>
+                            </Button>
+                            <Button x:Name="BtnAlignHorizontal" Margin="0,0,8,0" Background="Transparent" BorderBrush="Transparent" Click="BtnAlignHorizontal_OnClick" ToolTip="Distribuir horizontalmente (10px)">
+                                <Viewbox Width="28" Height="28">
+                                    <Canvas Width="24" Height="24">
+                                        <Path Fill="#444" Data="M22 2V4H2V2H22M7 10.5V13.5H17V10.5H7M2 20V22H22V20H2Z"/>
+                                    </Canvas>
+                                </Viewbox>
+                            </Button>
+                            <Button x:Name="BtnAlignVertical" Margin="0,0,8,0" Background="Transparent" BorderBrush="Transparent" Click="BtnAlignVertical_OnClick" ToolTip="Distribuir verticalmente (10px)">
+                                <Viewbox Width="28" Height="28">
+                                    <Canvas Width="24" Height="24">
+                                        <Path Fill="#444" Data="M4 22H2V2H4V22M22 2H20V22H22V2M13.5 7H10.5V17H13.5V7Z"/>
+                                    </Canvas>
+                                </Viewbox>
+                            </Button>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Vertical" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="8,0">
+                            <TextBlock Text="Developed by pdev ©️ 2013" Foreground="{DynamicResource Color.SubText}" HorizontalAlignment="Right"/>
+                            <TextBlock Text="Updated by Spinx ©️ 2025" Foreground="{DynamicResource Color.SubText}" HorizontalAlignment="Right"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <TextBlock Text="Original Repo:" Foreground="{DynamicResource Color.Text}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                <Button x:Name="BtnGotoGithub" Click="BtnGotoGithub_OnClick" Cursor="Hand" ToolTip="Abrir repositório original" Background="Transparent" BorderBrush="Transparent">
+                                    <Viewbox Width="20" Height="20">
+                                        <Canvas Width="24" Height="24">
+                                            <Path Fill="#24292e" Data="M12,2A10,10 0 0,0 2,12C2,16.42 4.87,20.17 8.84,21.5C9.34,21.58 9.5,21.27 9.5,21C9.5,20.77 9.5,20.14 9.5,19.31C6.73,19.91 6.14,17.97 6.14,17.97C5.68,16.81 5.03,16.5 5.03,16.5C4.12,15.88 5.1,15.9 5.1,15.9C6.1,15.97 6.63,16.93 6.63,16.93C7.5,18.45 8.97,18 9.54,17.76C9.63,17.11 9.89,16.67 10.17,16.42C7.95,16.17 5.62,15.31 5.62,11.5C5.62,10.39 6,9.5 6.65,8.79C6.55,8.54 6.2,7.5 6.75,6.15C6.75,6.15 7.59,5.88 9.5,7.17C10.29,6.95 11.15,6.84 12,6.84C12.85,6.84 13.71,6.95 14.5,7.17C16.41,5.88 17.25,6.15 17.25,6.15C17.8,7.5 17.45,8.54 17.35,8.79C18,9.5 18.38,10.39 18.38,11.5C18.38,15.32 16.04,16.16 13.81,16.41C14.17,16.72 14.5,17.33 14.5,18.26C14.5,19.6 14.5,20.68 14.5,21C14.5,21.27 14.66,21.59 15.17,21.5C19.14,20.16 22,16.42 22,12A10,10 0 0,0 12,2Z"/>
+                                        </Canvas>
+                                    </Viewbox>
+                                </Button>
+                            </StackPanel>
+                        </StackPanel>
+                    </DockPanel>
+                </TabItem>
+                <TabItem Header="Settings" Background="{DynamicResource Color.HeaderBackground}">
+                    <StackPanel Orientation="Horizontal" Margin="8" Background="{DynamicResource Color.SecondaryBackground}">
+                        <Button x:Name="BtnSettings" Click="BtnSettings_OnClick" Background="Transparent" BorderThickness="0">
+                            <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                                <Viewbox Width="28" Height="28">
+                                    <Canvas Width="24" Height="24">
+                                        <Path Fill="#444" Data="M20,6H12L10,4H4A2,2 0 0,0 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8A2,2 0 0,0 20,6M15,16H6V14H15V16M18,12H6V10H18V12Z"/>
+                                    </Canvas>
+                                </Viewbox>
+                                <TextBlock Text="Paths" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                        
+                        <Button x:Name="BtnThemeToggle" Background="Transparent" BorderThickness="0" Margin="12,0,0,0" ToolTip="Alternar Dark/Light" Click="BtnThemeToggle_OnClick">
+                            <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                                <Viewbox Width="28" Height="28">
+                                    <Canvas Width="24" Height="24">
+                                        <Path Fill="#444" Data="M12,18V6A6,6 0 0,1 18,12A6,6 0 0,1 12,18M20,15.31L23.31,12L20,8.69V4H15.31L12,0.69L8.69,4H4V8.69L0.69,12L4,15.31V20H8.69L12,23.31L15.31,20H20V15.31Z"/>
+                                    </Canvas>
+                                </Viewbox>
+                                <TextBlock Text="Mode" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        
+                    </StackPanel>
+                </TabItem>
+            </TabControl>
+        </Grid>
+        <GroupBox x:Name="GbSourceFiles" Header="Dialogs" Grid.Row="1" Margin="0 0 5 0" Background="{DynamicResource Color.SecondaryBackground}">
+            <Grid Background="{DynamicResource Color.SecondaryBackground}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="160"/>
+                </Grid.RowDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="TxtSearch" Background="{DynamicResource Color.SecondaryBackground}" Foreground="{DynamicResource Color.Text}"/>
+                    <Button Grid.Column="1" ToolTip="Clear filter" Click="BtnClearFilter_OnClick">
+                        <Image Source="../Resources/clear.png"/>
+                    </Button>
+                </Grid>
+                <ListBox x:Name="LbDialogs" ItemTemplate="{StaticResource SourceFileItemTemplate}" Grid.Row="1" Background="{DynamicResource Color.SecondaryBackground}" Foreground="{DynamicResource Color.Text}"/>
+                <GridSplitter Grid.Row="2" Height="5" HorizontalAlignment="Stretch" Background="{StaticResource SplitterBackground}" ResizeDirection="Rows" ShowsPreview="False"/>
+                <TabControl x:Name="LeftBottomTabs" Grid.Row="3" Margin="0,5,0,0" MinHeight="80" Background="{DynamicResource Color.SecondaryBackground}">
+                    <TabItem Header="Camadas" Background="{DynamicResource Color.SecondaryBackground}">
+                        <Grid Background="{DynamicResource Color.SecondaryBackground}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <DataGrid x:Name="DgLayers" Grid.Row="0" Background="{DynamicResource Color.SecondaryBackground}" Foreground="{DynamicResource Color.Text}"
+                                      AutoGenerateColumns="False"
+                                      CanUserAddRows="False"
+                                      CanUserDeleteRows="False"
+                                      SelectionMode="Extended"
+                                      SelectionUnit="FullRow"
+                                      HeadersVisibility="Column"
+                                      CellEditEnding="DgLayers_CellEditEnding"
+                                      SelectionChanged="DgLayers_SelectionChanged">
+                                <DataGrid.RowStyle>
+                                    <Style TargetType="DataGridRow">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Background" Value="#D0D0D0"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGrid.RowStyle>
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Componente" Binding="{Binding Name}" IsReadOnly="True" Width="*"/>
+                                    <DataGridTextColumn Header="Camada" Binding="{Binding Layer, Mode=TwoWay, UpdateSourceTrigger=Explicit}" Width="80"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,0,0">
+                                <Button x:Name="BtnSendBackward" Click="BtnSendBackward_OnClick" ToolTip="Enviar para trás (-1)" Background="Transparent" BorderBrush="Transparent" Margin="0,0,8,0">
+                                    <Viewbox Width="16" Height="16">
+                                        <Canvas Width="24" Height="24">
+                                            <Path Fill="#444" Data="M22,17V19H14V17H22M11,16L2,9L11,2L20,9L11,16M11,18.54L12,17.75V18C12,18.71 12.12,19.39 12.35,20L11,21.07L2,14.07L3.62,12.81L11,18.54Z"/>
+                                        </Canvas>
+                                    </Viewbox>
+                                </Button>
+                                <Button x:Name="BtnBringForward" Click="BtnBringForward_OnClick" ToolTip="Trazer para frente (+1)" Background="Transparent" BorderBrush="Transparent">
+                                    <Viewbox Width="16" Height="16">
+                                        <Canvas Width="24" Height="24">
+                                            <Path Fill="#444" Data="M17,14H19V17H22V19H19V22H17V19H14V17H17V14M11,16L2,9L11,2L20,9L11,16M11,18.54L12,17.75V18C12,18.71 12.12,19.39 12.35,20L11,21.07L2,14.07L3.62,12.81L11,18.54Z"/>
+                                        </Canvas>
+                                    </Viewbox>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </TabItem>
+                    <TabItem Header="Propriedades" Background="{DynamicResource Color.SecondaryBackground}">
+                        <Grid Background="{DynamicResource Color.SecondaryBackground}">
+                            <DataGrid x:Name="DgProps" Background="{DynamicResource Color.SecondaryBackground}" Foreground="{DynamicResource Color.Text}"
+                                      AutoGenerateColumns="False"
+                                      CanUserAddRows="False"
+                                      CanUserDeleteRows="False"
+                                      HeadersVisibility="Column"
+                                      CellEditEnding="DgProps_CellEditEnding"
+                                      LoadingRow="DgProps_LoadingRow">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Propriedade" Binding="{Binding Property}" IsReadOnly="True" Width="*"/>
+                                    <DataGridTemplateColumn Header="Valor" Width="2*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    
+                                                    <local:ImagePropertyControl Grid.Column="0" 
+                                                                               Value="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                               SurfacesPath="{Binding DataContext.ProjectController.SurfacesPath, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                               Visibility="{Binding IsImageProperty, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                    
+                                                    <TextBox Grid.Column="0"
+                                                             Text="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                             Background="{DynamicResource Color.SecondaryBackground}"
+                                                             Foreground="{DynamicResource Color.Text}"
+                                                             BorderBrush="Transparent">
+                                                        <TextBox.Style>
+                                                            <Style TargetType="TextBox">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsImageProperty}" Value="True">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBox.Style>
+                                                    </TextBox>
+                                                    
+                                                </Grid>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </TabItem>
+                </TabControl>
+            </Grid>
+        </GroupBox>
+        <GridSplitter Grid.Row="1" Width="5" ResizeDirection="Columns" ShowsPreview="False" Background="{StaticResource SplitterBackground}"/>
+        <Grid Grid.Column="1" Grid.Row="1" Background="{DynamicResource Color.SecondaryBackground}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid x:Name="SearchTextPanel" Margin="2" Background="{DynamicResource Color.SecondaryBackground}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Search" VerticalAlignment="Center"/>
+                <TextBox x:Name="TbSearchInText" Grid.Column="1" VerticalAlignment="Stretch" Margin="2 2 0 2"/>
+                <StackPanel Orientation="Horizontal" Grid.Column="2">
+                    <Button Content="Prev" Margin="2" Click="BtnSearchPrevTextFragment_OnClick"/>
+                    <Button Content="Next" Margin="0 2 2 2" Click="BtnSearchNextTextFragment_OnClick"/>
+                </StackPanel>
+            </Grid>
+            <Border BorderThickness="2" BorderBrush="Black" Grid.Row="1" Background="{DynamicResource Color.SecondaryBackground}">
+                <avalon:TextEditor  x:Name="TeFile" Background="{DynamicResource Color.SecondaryBackground}" Foreground="{DynamicResource Color.Text}"
+                                FontFamily="Consolas"
+                                SyntaxHighlighting="XML"
+                                ShowLineNumbers="True"
+                                FontSize="10pt"
+                                Margin="0 0 5 0"/>
+            </Border>
+            <Grid x:Name="EditorButtonPanel" Grid.Row="2" Visibility="Collapsed">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Button x:Name="BtnCommit" Margin="2 2" HorizontalAlignment="Right" Grid.Column="1"
+                        Click="BtnCommit_OnClick">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="../Resources/commit.png" Height="16"/>
+                        <TextBlock Text="Apply changes" Margin="5 2"/>
+                    </StackPanel>
+                </Button>
+                <Button x:Name="BtnCancel" Margin="2 2" HorizontalAlignment="Right" Grid.Column="2"
+                        Click="BtnCancel_OnClick">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="../Resources/rollback.png" Height="16"/>
+                        <TextBlock Text="Cancel changes" Margin="5 2"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Grid>
+        <GridSplitter Grid.Row="1" Grid.Column="1" Width="5" ResizeDirection="Columns" ShowsPreview="False" Background="{StaticResource SplitterBackground}"/>
+        <Grid Grid.Row="1" Grid.Column="2">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            
+            <Grid Grid.Row="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="25"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="25"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                
+                <Border Grid.Row="0" Grid.Column="0" 
+                        Background="{DynamicResource Color.SecondaryBackground}"
+                        BorderBrush="{DynamicResource Color.Border}" 
+                        BorderThickness="0,0,1,1">
+                    <TextBlock Text="0" FontSize="8" 
+                               HorizontalAlignment="Center" 
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource Color.Text}"/>
+                </Border>
+                
+                <ScrollViewer x:Name="HorizontalRulerScroll" Grid.Row="0" Grid.Column="1"
+                              HorizontalScrollBarVisibility="Hidden" 
+                              VerticalScrollBarVisibility="Hidden"
+                              Background="{DynamicResource Color.SecondaryBackground}"
+                              BorderBrush="{DynamicResource Color.Border}" 
+                              BorderThickness="0,0,0,1">
+                    <Canvas x:Name="HorizontalRuler" Height="25" Background="Transparent">
+                        <Canvas.RenderTransform>
+                            <ScaleTransform x:Name="HorizontalRulerScale" ScaleX="1" ScaleY="1"/>
+                        </Canvas.RenderTransform>
+                    </Canvas>
+                </ScrollViewer>
+                
+                <ScrollViewer x:Name="VerticalRulerScroll" Grid.Row="1" Grid.Column="0"
+                              HorizontalScrollBarVisibility="Hidden" 
+                              VerticalScrollBarVisibility="Hidden"
+                              Background="{DynamicResource Color.SecondaryBackground}"
+                              BorderBrush="{DynamicResource Color.Border}" 
+                              BorderThickness="0,0,1,0">
+                    <Canvas x:Name="VerticalRuler" Width="25" Background="Transparent">
+                        <Canvas.RenderTransform>
+                            <ScaleTransform x:Name="VerticalRulerScale" ScaleX="1" ScaleY="1"/>
+                        </Canvas.RenderTransform>
+                    </Canvas>
+                </ScrollViewer>
+                
+                <ScrollViewer x:Name="CanvasScrollViewer" Grid.Row="1" Grid.Column="1"
+                              HorizontalScrollBarVisibility="Auto" 
+                              VerticalScrollBarVisibility="Auto"
+                              Background="{DynamicResource Color.SecondaryBackground}"
+                              PreviewMouseWheel="CanvasScrollViewer_PreviewMouseWheel"
+                              ScrollChanged="CanvasScrollViewer_ScrollChanged">
+                    <Border x:Name="CanvasBorder" ClipToBounds="True">
+                        <Canvas x:Name="DialogCanvas" Background="Transparent" 
+                                Focusable="True" 
+                                KeyboardNavigation.TabNavigation="Cycle" 
+                                KeyboardNavigation.DirectionalNavigation="None">
+                            <Canvas.RenderTransform>
+                                <ScaleTransform x:Name="CanvasScaleTransform" ScaleX="1" ScaleY="1"/>
+                            </Canvas.RenderTransform>
+                        </Canvas>
+                    </Border>
+                </ScrollViewer>
+            </Grid>
+            
+            <Border Grid.Row="1" Background="{DynamicResource Color.SecondaryBackground}" 
+                    BorderBrush="{DynamicResource Color.Border}" BorderThickness="0,1,0,0" 
+                    Padding="8,4">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <TextBlock Text="Zoom:" VerticalAlignment="Center" Margin="0,0,5,0" 
+                               Foreground="{DynamicResource Color.Text}"/>
+                    <TextBox x:Name="TxtZoom" Width="60" Height="22" 
+                             Text="100%" 
+                             VerticalAlignment="Center"
+                             HorizontalContentAlignment="Center"
+                             Background="{DynamicResource Color.SecondaryBackground}"
+                             Foreground="{DynamicResource Color.Text}"
+                             KeyDown="TxtZoom_KeyDown"
+                             LostFocus="TxtZoom_LostFocus"/>
+                    <Button x:Name="BtnZoomReset" Content="Reset" Width="50" Height="22" 
+                            Margin="5,0,0,0" 
+                            Background="Transparent" 
+                            BorderBrush="{DynamicResource Color.Border}"
+                            Foreground="{DynamicResource Color.Text}"
+                            Click="BtnZoomReset_Click"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>
