@@ -214,7 +214,7 @@ namespace UIEdit.Controllers
                             if (element.Attributes.Cast<XmlAttribute>().Any(t => t.Name == "y")) radioControl.Y = Convert.ToDouble(element.Attributes["y"].Value);
                             if (element.Attributes.Cast<XmlAttribute>().Any(t => t.Name == "Width")) radioControl.Width = Convert.ToDouble(element.Attributes["Width"].Value);
                             if (element.Attributes.Cast<XmlAttribute>().Any(t => t.Name == "Height")) radioControl.Height = Convert.ToDouble(element.Attributes["Height"].Value);
-                            if (element.ChildNodes != null && element.ChildNodes[0].Name == "Hint")
+                            if (element.ChildNodes != null && element.ChildNodes.Count > 0 && element.ChildNodes[0].Name == "Hint")
                             {
                                 radioControl.Hint = element.ChildNodes != null
                                                    ? element.ChildNodes[0].Attributes["String"].Value
