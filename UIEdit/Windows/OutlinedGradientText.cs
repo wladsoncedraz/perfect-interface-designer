@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Text;
 using System.Windows;
 using System.Windows.Media;
 
@@ -57,8 +59,8 @@ namespace UIEdit.Windows
         protected override void OnRender(DrawingContext dc)
         {
             base.OnRender(dc);
-            var text = Text ?? string.Empty;
-            text = System.Text.RegularExpressions.Regex.Replace(text, "\u005E[0-9A-Fa-f]{6}", string.Empty);
+            var original = Text ?? string.Empty;
+            var segments = ParseColoredSegments(original, out var text);
             if (string.IsNullOrEmpty(text)) return;
 
             var typeface = new Typeface(FontFamily, FontStyles.Normal, FontWeights.SemiBold, FontStretches.Normal);
@@ -98,13 +100,30 @@ namespace UIEdit.Windows
             {
                 fill = Brushes.White;
             }
-            dc.DrawGeometry(fill, null, geo);
+
+            if (segments.Count == 0)
+            {
+                segments.Add(new ColoredSegment { Start = 0, Length = text.Length, Color = null });
+            }
+
+            ft.SetForegroundBrush(fill, 0, text.Length);
+
+            foreach (var segment in segments)
+            {
+                if (segment.Length <= 0 || !segment.Color.HasValue) continue;
+                var brush = new SolidColorBrush(segment.Color.Value);
+                brush.Freeze();
+                ft.SetForegroundBrush(brush, segment.Start, segment.Length);
+            }
+
+            dc.DrawText(ft, start);
 
             if (OutlineColor.HasValue)
             {
+                var outlineGeo = ft.BuildGeometry(start);
                 var pen = new Pen(new SolidColorBrush(OutlineColor.Value), Math.Max(1.0, FontSize * 0.08));
                 pen.Freeze();
-                dc.DrawGeometry(null, pen, geo);
+                dc.DrawGeometry(null, pen, outlineGeo);
             }
         }
 
@@ -117,6 +136,77 @@ namespace UIEdit.Windows
         {
             return new Size(double.IsInfinity(availableSize.Width) ? 0 : availableSize.Width,
                             double.IsInfinity(availableSize.Height) ? 0 : availableSize.Height);
+        }
+
+        private struct ColoredSegment
+        {
+            public int Start;
+            public int Length;
+            public Color? Color;
+        }
+
+        private static List<ColoredSegment> ParseColoredSegments(string input, out string plainText)
+        {
+            var segments = new List<ColoredSegment>();
+            if (string.IsNullOrEmpty(input))
+            {
+                plainText = string.Empty;
+                return segments;
+            }
+
+            var sb = new StringBuilder();
+            Color? currentColor = null;
+            var segmentStart = 0;
+            var hasActiveSegment = false;
+
+            void CloseSegment()
+            {
+                if (!hasActiveSegment || !currentColor.HasValue) { hasActiveSegment = false; return; }
+                var length = sb.Length - segmentStart;
+                if (length > 0)
+                {
+                    segments.Add(new ColoredSegment { Start = segmentStart, Length = length, Color = currentColor });
+                }
+                hasActiveSegment = false;
+            }
+
+            for (int i = 0; i < input.Length; i++)
+            {
+                if (input[i] == '^' && i + 6 < input.Length)
+                {
+                    var candidate = input.Substring(i + 1, 6);
+                    if (TryParseHexColor(candidate, out var parsedColor))
+                    {
+                        CloseSegment();
+                        currentColor = parsedColor;
+                        i += 6;
+                        continue;
+                    }
+                }
+
+                if (!hasActiveSegment)
+                {
+                    segmentStart = sb.Length;
+                    hasActiveSegment = true;
+                }
+                sb.Append(input[i]);
+            }
+
+            CloseSegment();
+            plainText = sb.ToString();
+            return segments;
+        }
+
+        private static bool TryParseHexColor(string hex, out Color color)
+        {
+            color = default;
+            if (string.IsNullOrEmpty(hex) || hex.Length != 6) return false;
+            if (!int.TryParse(hex, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var value)) return false;
+            var r = (byte)((value >> 16) & 0xFF);
+            var g = (byte)((value >> 8) & 0xFF);
+            var b = (byte)(value & 0xFF);
+            color = Color.FromRgb(r, g, b);
+            return true;
         }
         #endregion
     }
