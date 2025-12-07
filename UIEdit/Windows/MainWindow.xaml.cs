@@ -1,6 +1,7 @@
 ﻿using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Highlighting.Xshd;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -321,7 +322,9 @@ namespace UIEdit.Windows
             LbDialogs.ItemsSource = null;
             var files = TxtSearch.Text == ""
                 ? ProjectController.Files.OrderBy(t => t.ShortFileName)
-                : ProjectController.Files.Where(f => f.ShortFileName.Contains(TxtSearch.Text)).OrderBy(t => t.ShortFileName);
+                : ProjectController.Files.Where(f => f.ShortFileName.IndexOf(TxtSearch.Text, StringComparison.OrdinalIgnoreCase) >= 0)
+                    .OrderByDescending(f => StringComparer.OrdinalIgnoreCase.Equals(f.ShortFileName, TxtSearch.Text))
+                    .ThenBy(f => f.ShortFileName, StringComparer.OrdinalIgnoreCase);
             LbDialogs.ItemsSource = files;
             if (CurrentSourceFile == null) return;
             var i = -1;
