@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Web.Configuration;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -311,6 +312,11 @@ namespace UIEdit.Windows
             File.AppendAllText("error.log", string.Format(@"{0} {1} {2}{4}{3}{4}{4}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), e.Exception, e.Exception.Message, e.Exception.StackTrace, Environment.NewLine));
         }
 
+        private string Normalize(string name) =>
+            name.EndsWith(".xml", StringComparison.OrdinalIgnoreCase)
+                ? name.Substring(0, name.Length - 4)
+                : name;
+
         /// <summary>
         /// Search box text changed event handler.
         /// </summary>
@@ -320,11 +326,16 @@ namespace UIEdit.Windows
         {
             if (ProjectController.Files == null) return;
             LbDialogs.ItemsSource = null;
+
             var files = TxtSearch.Text == ""
                 ? ProjectController.Files.OrderBy(t => t.ShortFileName)
-                : ProjectController.Files.Where(f => f.ShortFileName.IndexOf(TxtSearch.Text, StringComparison.OrdinalIgnoreCase) >= 0)
-                    .OrderByDescending(f => StringComparer.OrdinalIgnoreCase.Equals(f.ShortFileName, TxtSearch.Text))
+                : ProjectController.Files
+                    .Where(f => 
+                        Normalize(f.ShortFileName).IndexOf(TxtSearch.Text, StringComparison.OrdinalIgnoreCase) >= 0)
+                    .OrderByDescending(f =>
+                        StringComparer.OrdinalIgnoreCase.Equals(Normalize(f.ShortFileName), TxtSearch.Text))
                     .ThenBy(f => f.ShortFileName, StringComparer.OrdinalIgnoreCase);
+
             LbDialogs.ItemsSource = files;
             if (CurrentSourceFile == null) return;
             var i = -1;
