@@ -327,13 +327,15 @@ namespace UIEdit.Windows
             if (ProjectController.Files == null) return;
             LbDialogs.ItemsSource = null;
 
-            var files = TxtSearch.Text == ""
+            var normalizedTextSearch = Normalize(TxtSearch.Text);
+
+            var files = normalizedTextSearch == ""
                 ? ProjectController.Files.OrderBy(t => t.ShortFileName)
                 : ProjectController.Files
                     .Where(f => 
-                        Normalize(f.ShortFileName).IndexOf(TxtSearch.Text, StringComparison.OrdinalIgnoreCase) >= 0)
+                        Normalize(f.ShortFileName).IndexOf(normalizedTextSearch, StringComparison.OrdinalIgnoreCase) >= 0)
                     .OrderByDescending(f =>
-                        StringComparer.OrdinalIgnoreCase.Equals(Normalize(f.ShortFileName), TxtSearch.Text))
+                        StringComparer.OrdinalIgnoreCase.Equals(Normalize(f.ShortFileName), normalizedTextSearch))
                     .ThenBy(f => f.ShortFileName, StringComparer.OrdinalIgnoreCase);
 
             LbDialogs.ItemsSource = files;
