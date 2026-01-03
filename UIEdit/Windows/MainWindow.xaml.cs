@@ -1,12 +1,14 @@
 ﻿using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Highlighting.Xshd;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Web.Configuration;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -310,6 +312,11 @@ namespace UIEdit.Windows
             File.AppendAllText("error.log", string.Format(@"{0} {1} {2}{4}{3}{4}{4}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), e.Exception, e.Exception.Message, e.Exception.StackTrace, Environment.NewLine));
         }
 
+        private string Normalize(string name) =>
+            name.EndsWith(".xml", StringComparison.OrdinalIgnoreCase)
+                ? name.Substring(0, name.Length - 4)
+                : name;
+
         /// <summary>
         /// Search box text changed event handler.
         /// </summary>
@@ -319,9 +326,18 @@ namespace UIEdit.Windows
         {
             if (ProjectController.Files == null) return;
             LbDialogs.ItemsSource = null;
-            var files = TxtSearch.Text == ""
+
+            var normalizedTextSearch = Normalize(TxtSearch.Text);
+
+            var files = normalizedTextSearch == ""
                 ? ProjectController.Files.OrderBy(t => t.ShortFileName)
-                : ProjectController.Files.Where(f => f.ShortFileName.Contains(TxtSearch.Text)).OrderBy(t => t.ShortFileName);
+                : ProjectController.Files
+                    .Where(f => 
+                        Normalize(f.ShortFileName).IndexOf(normalizedTextSearch, StringComparison.OrdinalIgnoreCase) >= 0)
+                    .OrderByDescending(f =>
+                        StringComparer.OrdinalIgnoreCase.Equals(Normalize(f.ShortFileName), normalizedTextSearch))
+                    .ThenBy(f => f.ShortFileName, StringComparer.OrdinalIgnoreCase);
+
             LbDialogs.ItemsSource = files;
             if (CurrentSourceFile == null) return;
             var i = -1;

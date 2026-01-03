@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -28,6 +29,12 @@ namespace UIEdit.Controllers
         #region Constructor
         #endregion
 
+        private static readonly Regex StringAttributeRegex = new Regex("(String\\s*=\\s*)([\"'])(.*?)(\\2)", RegexOptions.Compiled | RegexOptions.Singleline);
+        private static readonly KeyValuePair<string, string>[] StringAttributeEntityMap =
+        {
+            new KeyValuePair<string, string>("<", "&lt;"),
+        };
+
         #region Methods
         /// <summary>
         /// Parses the given XML text into the Dialog model.
@@ -44,7 +51,40 @@ namespace UIEdit.Controllers
                 Logger.LogOperationStart("LayoutController.Parse", $"Parse XML - Arquivo: {System.IO.Path.GetFileName(path)}");
                 var safe = (text ?? string.Empty).TrimStart('\uFEFF', '\u200B', '\u200E', '\u200F', ' ', '\t', '\r', '\n');
                 var xmlDoc = new XmlDocument();
-                xmlDoc.LoadXml(safe);
+                var cleanedXml = CleanXmlForParsing(safe);
+                var xmlLoaded = false;
+                XmlException lastXmlException = null;
+
+                foreach (var candidate in new[] { cleanedXml, safe })
+                {
+                    if (xmlLoaded || string.IsNullOrEmpty(candidate))
+                        continue;
+
+                    try
+                    {
+                        xmlDoc.LoadXml(candidate);
+                        xmlLoaded = true;
+                    }
+                    catch (XmlException loadEx)
+                    {
+                        lastXmlException = loadEx;
+                    }
+                }
+
+                if (!xmlLoaded)
+                {
+                    var fallbackXml = CreateSimpleValidXml(safe);
+                    if (!string.IsNullOrEmpty(fallbackXml))
+                    {
+                        xmlDoc.LoadXml(fallbackXml);
+                        xmlLoaded = true;
+                    }
+                }
+
+                if (!xmlLoaded)
+                {
+                    throw lastXmlException ?? new XmlException("Falha ao carregar o XML informado.");
+                }
 
                 if (Dialog != null)
                 {
@@ -174,7 +214,7 @@ namespace UIEdit.Controllers
                             if (element.Attributes.Cast<XmlAttribute>().Any(t => t.Name == "y")) radioControl.Y = Convert.ToDouble(element.Attributes["y"].Value);
                             if (element.Attributes.Cast<XmlAttribute>().Any(t => t.Name == "Width")) radioControl.Width = Convert.ToDouble(element.Attributes["Width"].Value);
                             if (element.Attributes.Cast<XmlAttribute>().Any(t => t.Name == "Height")) radioControl.Height = Convert.ToDouble(element.Attributes["Height"].Value);
-                            if (element.ChildNodes != null && element.ChildNodes[0].Name == "Hint")
+                            if (element.ChildNodes != null && element.ChildNodes.Count > 0 && element.ChildNodes[0].Name == "Hint")
                             {
                                 radioControl.Hint = element.ChildNodes != null
                                                    ? element.ChildNodes[0].Attributes["String"].Value
@@ -950,7 +990,7 @@ namespace UIEdit.Controllers
                 {
                     xmlDoc.Save(xw);
                 }
-                var result = sb.ToString();
+                var result = RestoreInvalidStringAttributes(sb.ToString());
 
                 if (string.IsNullOrEmpty(result))
                 {
@@ -1011,6 +1051,7 @@ namespace UIEdit.Controllers
                 var cleaned = xmlText.TrimStart('\uFEFF', '\u200B', '\u200E', '\u200F', ' ', '\t', '\r', '\n');
 
                 cleaned = Regex.Replace(cleaned, @"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]", "");
+                cleaned = EscapeInvalidStringAttributes(cleaned);
 
                 if (!cleaned.StartsWith("<"))
                 {
@@ -1064,6 +1105,96 @@ namespace UIEdit.Controllers
                 System.Diagnostics.Debug.WriteLine($"StackTrace: {ex.StackTrace}");
                 return null;
             }
+        }
+
+        private string EscapeInvalidStringAttributes(string xmlText)
+        {
+            return TransformStringAttributes(xmlText, EncodeStringAttributeValue);
+        }
+
+        private string RestoreInvalidStringAttributes(string xmlText)
+        {
+            return TransformStringAttributes(xmlText, DecodeStringAttributeValue);
+        }
+
+        private static string TransformStringAttributes(string xmlText, Func<string, string> transformer)
+        {
+            if (string.IsNullOrEmpty(xmlText) || transformer == null)
+            {
+                return xmlText;
+            }
+
+            return StringAttributeRegex.Replace(xmlText, match =>
+            {
+                var prefix = match.Groups[1].Value;
+                var quote = match.Groups[2].Value;
+                var value = match.Groups[3].Value;
+                var transformed = transformer(value);
+                if (transformed == null || string.Equals(transformed, value, StringComparison.Ordinal))
+                {
+                    return match.Value;
+                }
+
+                return $"{prefix}{quote}{transformed}{quote}";
+            });
+        }
+
+        private static string EncodeStringAttributeValue(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return value;
+            }
+
+            var result = value;
+            var changed = false;
+
+            foreach (var entity in StringAttributeEntityMap)
+            {
+                if (string.IsNullOrEmpty(entity.Key) || string.IsNullOrEmpty(entity.Value))
+                {
+                    continue;
+                }
+
+                if (result.IndexOf(entity.Key, StringComparison.Ordinal) == -1)
+                {
+                    continue;
+                }
+
+                result = result.Replace(entity.Key, entity.Value);
+                changed = true;
+            }
+
+            return changed ? result : value;
+        }
+
+        private static string DecodeStringAttributeValue(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return value;
+            }
+
+            var result = value;
+            var changed = false;
+
+            foreach (var entity in StringAttributeEntityMap)
+            {
+                if (string.IsNullOrEmpty(entity.Key) || string.IsNullOrEmpty(entity.Value))
+                {
+                    continue;
+                }
+
+                if (result.IndexOf(entity.Value, StringComparison.Ordinal) == -1)
+                {
+                    continue;
+                }
+
+                result = result.Replace(entity.Value, entity.Key);
+                changed = true;
+            }
+
+            return changed ? result : value;
         }
 
         /// <summary>
